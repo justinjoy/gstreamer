@@ -199,7 +199,7 @@
  */
 
 #ifdef HAVE_CONFIG_H
-#  include "config.h"
+#include "config.h"
 #endif
 
 #include <stdlib.h>
@@ -3645,6 +3645,16 @@ gst_base_parse_get_duration (GstBaseParse * parse, GstFormat format,
     res = TRUE;
   } else {
     GST_LOG_OBJECT (parse, "cannot estimate duration");
+    if (format == GST_FORMAT_TIME && parse->priv->estimated_duration == -1) {
+      /* try to update duration */
+      GST_LOG_OBJECT (parse, "try to get estimated duration");
+      gst_base_parse_update_duration (parse);
+      if (parse->priv->estimated_duration != -1) {
+        *duration = parse->priv->estimated_duration;
+        res = TRUE;
+      }
+    }
+
   }
 
   GST_LOG_OBJECT (parse, "res: %d, duration %" GST_TIME_FORMAT, res,
