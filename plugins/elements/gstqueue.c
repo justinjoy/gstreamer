@@ -822,6 +822,7 @@ gst_queue_handle_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
       queue->srcresult = GST_FLOW_OK;
       queue->eos = FALSE;
       queue->unexpected = FALSE;
+      queue->last_timestamp = GST_CLOCK_TIME_NONE;
       gst_pad_start_task (queue->srcpad, (GstTaskFunction) gst_queue_loop,
           queue->srcpad, NULL);
       GST_QUEUE_MUTEX_UNLOCK (queue);
