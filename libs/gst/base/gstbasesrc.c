@@ -207,7 +207,8 @@ enum
   PROP_BLOCKSIZE,
   PROP_NUM_BUFFERS,
   PROP_TYPEFIND,
-  PROP_DO_TIMESTAMP
+  PROP_DO_TIMESTAMP,
+  PROP_SMART_PROPERTIES
 };
 
 #define GST_BASE_SRC_GET_PRIVATE(obj)  \
@@ -386,6 +387,10 @@ gst_base_src_class_init (GstBaseSrcClass * klass)
       g_param_spec_boolean ("do-timestamp", "Do timestamp",
           "Apply current stream time to buffers", DEFAULT_DO_TIMESTAMP,
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+  g_object_class_install_property (gobject_class, PROP_SMART_PROPERTIES,
+      g_param_spec_string ("smart-properties", "Smart Properties",
+          "Hold various property values for reply custom query", NULL,
+          G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS));
 
   gstelement_class->change_state =
       GST_DEBUG_FUNCPTR (gst_base_src_change_state);
@@ -461,6 +466,8 @@ gst_base_src_init (GstBaseSrc * basesrc, gpointer g_class)
   GST_OBJECT_FLAG_SET (basesrc, GST_ELEMENT_FLAG_SOURCE);
 
   GST_DEBUG_OBJECT (basesrc, "init done");
+
+  basesrc->smart_prop = NULL;
 }
 
 static void
@@ -482,6 +489,11 @@ gst_base_src_finalize (GObject * object)
     g_list_foreach (basesrc->priv->pending_events, (GFunc) gst_event_unref,
         NULL);
     g_list_free (basesrc->priv->pending_events);
+  }
+
+  if (basesrc->smart_prop) {
+    gst_structure_free (basesrc->smart_prop);
+    basesrc->smart_prop = NULL;
   }
 
   G_OBJECT_CLASS (parent_class)->finalize (object);
@@ -936,6 +948,22 @@ gst_base_src_fixate (GstBaseSrc * bsrc, GstCaps * caps)
 }
 
 static gboolean
+copy_smart_properties (GQuark field_id, GValue * value, gpointer user_data)
+{
+  GstBaseSrc *src = GST_BASE_SRC (user_data);
+
+  if (!gst_structure_id_has_field (src->smart_prop, field_id)) {
+    GST_WARNING_OBJECT (src, "%s field does not exist in smart-properties",
+        g_quark_to_string (field_id));
+    return TRUE;
+  }
+
+  g_value_copy (gst_structure_id_get_value (src->smart_prop, field_id), value);
+  return TRUE;
+}
+
+
+static gboolean
 gst_base_src_default_query (GstBaseSrc * src, GstQuery * query)
 {
   gboolean res;
@@ -1238,6 +1266,20 @@ gst_base_src_default_query (GstBaseSrc * src, GstQuery * query)
       } else {
         res = FALSE;
       }
+      break;
+    }
+    case GST_QUERY_CUSTOM:{
+      GstStructure *s;
+
+      s = gst_query_writable_structure (query);
+      if (gst_structure_has_name (s, "smart-properties")) {
+        GST_INFO_OBJECT (src, "got %s query", gst_structure_get_name (s));
+
+        gst_structure_map_in_place (s, copy_smart_properties, src);
+
+        res = TRUE;
+      } else
+        res = FALSE;
       break;
     }
     default:
@@ -2023,6 +2065,21 @@ gst_base_src_set_property (GObject * object, guint prop_id,
     case PROP_DO_TIMESTAMP:
       gst_base_src_set_do_timestamp (src, g_value_get_boolean (value));
       break;
+    case PROP_SMART_PROPERTIES:
+    {
+      GstStructure *s = NULL;
+      const gchar *maps = g_value_get_string (value);
+      if (src->smart_prop)
+        gst_structure_free (src->smart_prop);
+
+      s = gst_structure_from_string (maps, NULL);
+      GST_INFO_OBJECT (src,
+          "passed string is [%s], result structure is [%" GST_PTR_FORMAT "]",
+          maps, s);
+
+      src->smart_prop = ((s) ? gst_structure_copy (s) : NULL);
+      break;
+    }
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
       break;

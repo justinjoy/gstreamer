@@ -106,6 +106,8 @@ struct _GstBaseSrc {
 
   GstBaseSrcPrivate *priv;
 
+  GstStructure  *smart_prop;
+
   /*< private >*/
   gpointer       _gst_reserved[GST_PADDING_LARGE];
 };
