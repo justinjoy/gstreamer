@@ -951,6 +951,7 @@ static gboolean
 copy_smart_properties (GQuark field_id, GValue * value, gpointer user_data)
 {
   GstBaseSrc *src = GST_BASE_SRC (user_data);
+  const GValue *src_value;
 
   if (!gst_structure_id_has_field (src->smart_prop, field_id)) {
     GST_WARNING_OBJECT (src, "%s field does not exist in smart-properties",
@@ -958,7 +959,10 @@ copy_smart_properties (GQuark field_id, GValue * value, gpointer user_data)
     return TRUE;
   }
 
-  g_value_copy (gst_structure_id_get_value (src->smart_prop, field_id), value);
+  src_value = gst_structure_id_get_value (src->smart_prop, field_id);
+  g_value_unset (value);
+  g_value_init (value, G_VALUE_TYPE (src_value));
+  g_value_copy (src_value, value);
   return TRUE;
 }
 
@@ -1272,7 +1276,7 @@ gst_base_src_default_query (GstBaseSrc * src, GstQuery * query)
       GstStructure *s;
 
       s = gst_query_writable_structure (query);
-      if (gst_structure_has_name (s, "smart-properties")) {
+      if (gst_structure_has_name (s, "smart-properties") && src->smart_prop) {
         GST_INFO_OBJECT (src, "got %s query", gst_structure_get_name (s));
 
         gst_structure_map_in_place (s, copy_smart_properties, src);
