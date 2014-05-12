@@ -334,6 +334,21 @@ typedef enum
 } GstElementFlags;
 
 /**
+ * GstSmartPropertyReturn
+ * @GST_SMART_PROPERTIES_OK : query success
+ * @GST_SMART_PROPERTIES_QUERY_FAILED : query failed, there is no matched field
+ * @GST_SMART_PROPERTIES_NOT_LINKED : sinkpad is not linked with peerpad
+ */
+
+typedef enum
+{
+  GST_SMART_PROPERTIES_OK           = 1,
+  GST_SMART_PROPERTIES_QUERY_FAILED = -1,
+  GST_SMART_PROPERTIES_NOT_LINKED   = -2,
+  GST_SMART_PROPERTIES_ERROR        = -3
+} GstSmartPropertiesReturn;
+
+/**
  * GST_ELEMENT_IS_LOCKED_STATE:
  * @elem: A #GstElement to query
  *
@@ -801,6 +816,17 @@ void                    gst_element_lost_state          (GstElement * element);
 
 /* factory management */
 GstElementFactory*      gst_element_get_factory         (GstElement *element);
+
+GstSmartPropertiesReturn gst_element_get_smart_properties_valist_pre_query (GstElement * element,
+                                                                           const gchar * first_property_name,
+                                                                           GstStructure *s,
+                                                                           va_list args);
+GstSmartPropertiesReturn gst_element_get_smart_properties_valist_post_query (GstElement * element,
+                                                                            const gchar * first_property_name,
+                                                                            GstStructure *s,
+                                                                            va_list args);
+GstSmartPropertiesReturn gst_element_get_smart_properties (GstElement * element,
+                                                          const gchar * first_property_name, ...);
 
 G_END_DECLS
 

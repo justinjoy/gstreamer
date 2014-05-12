@@ -3047,3 +3047,117 @@ gst_element_set_context (GstElement * element, GstContext * context)
   if (oclass->set_context)
     oclass->set_context (element, context);
 }
+
+GstSmartPropertiesReturn
+gst_element_get_smart_properties_valist_pre_query (GstElement * element,
+    const gchar * first_property_name, GstStructure * s, va_list args)
+{
+  const gchar *name;
+  GstSmartPropertiesReturn ret = GST_SMART_PROPERTIES_OK;
+
+  g_return_if_fail (GST_IS_ELEMENT (element));
+
+  name = first_property_name;
+
+  while (name) {
+    /* make the structure for query */
+    gst_structure_set (s, name, G_TYPE_POINTER, NULL, NULL);
+    /* skip the value */
+    va_arg (args, gpointer);
+    name = va_arg (args, gchar *);
+  }
+
+  return ret;
+}
+
+GstSmartPropertiesReturn
+gst_element_get_smart_properties_valist_post_query (GstElement * element,
+    const gchar * first_property_name, GstStructure * s, va_list args)
+{
+  const gchar *name;
+  GstSmartPropertiesReturn ret = GST_SMART_PROPERTIES_OK;
+
+  g_return_if_fail (GST_IS_ELEMENT (element));
+
+  if (s == NULL)
+    return GST_SMART_PROPERTIES_ERROR;
+
+  name = first_property_name;
+
+  while (name) {
+    const GValue *v;
+    gchar *error = NULL;
+
+    /* get the value from query result */
+    v = gst_structure_get_value (s, name);
+    G_VALUE_LCOPY (v, args, 0, &error);
+
+    if (error) {
+      g_warning ("%s: %s", G_STRFUNC, error);
+      g_free (error);
+      ret = GST_SMART_PROPERTIES_ERROR;
+      break;
+    }
+    name = va_arg (args, gchar *);
+  }
+
+  return ret;
+}
+
+GstSmartPropertiesReturn
+gst_element_get_smart_properties (GstElement * element,
+    const gchar * first_property_name, ...)
+{
+  va_list args;
+  GstSmartPropertiesReturn ret = GST_SMART_PROPERTIES_OK;
+  GstPad *sinkpad, *peerpad;
+  GstQuery *query;
+  GstIterator *it;
+  GstIteratorResult itres;
+  GValue item = { 0 };
+  GstStructure *s;
+  const GstStructure *result;
+
+  g_return_if_fail (GST_IS_ELEMENT (element));
+
+  s = gst_structure_new_empty ("smart-properties");
+
+  va_start (args, first_property_name);
+  ret =
+      gst_element_get_smart_properties_valist_pre_query (element,
+      first_property_name, s, args);
+  va_end (args);
+
+  if (ret != GST_SMART_PROPERTIES_OK)
+    return ret;
+
+  it = gst_element_iterate_sink_pads (element);
+  itres = gst_iterator_next (it, &item);
+  if (itres != GST_ITERATOR_OK)
+    return GST_SMART_PROPERTIES_ERROR;
+
+  sinkpad = g_value_get_object (&item);
+  peerpad = gst_pad_get_peer (sinkpad);
+
+  if (!peerpad)
+    return GST_SMART_PROPERTIES_NOT_LINKED;
+
+  query = gst_query_new_custom (GST_QUERY_CUSTOM, s);
+
+  if (!gst_pad_query (peerpad, query))
+    return GST_SMART_PROPERTIES_QUERY_FAILED;
+
+  result = gst_query_get_structure (query);
+
+  va_start (args, first_property_name);
+  ret =
+      gst_element_get_smart_properties_valist_post_query (element,
+      first_property_name, (GstStructure *) result, args);
+  va_end (args);
+
+  gst_query_unref (query);
+  g_value_unset (&item);
+  gst_iterator_free (it);
+  gst_object_unref (peerpad);
+  return ret;
+}
