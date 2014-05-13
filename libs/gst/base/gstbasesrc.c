@@ -2048,6 +2048,16 @@ subclass_failed:
   }
 }
 
+static gboolean
+set_smart_properties (GQuark field_id, const GValue * value, gpointer user_data)
+{
+  GstBaseSrc *src = GST_BASE_SRC (user_data);
+
+  gst_structure_id_set_value (src->smart_prop, field_id, value);
+  return TRUE;
+}
+
+
 static void
 gst_base_src_set_property (GObject * object, guint prop_id,
     const GValue * value, GParamSpec * pspec)
@@ -2073,15 +2083,17 @@ gst_base_src_set_property (GObject * object, guint prop_id,
     {
       GstStructure *s = NULL;
       const gchar *maps = g_value_get_string (value);
-      if (src->smart_prop)
-        gst_structure_free (src->smart_prop);
 
       s = gst_structure_from_string (maps, NULL);
       GST_INFO_OBJECT (src,
           "passed string is [%s], result structure is [%" GST_PTR_FORMAT "]",
           maps, s);
 
-      src->smart_prop = ((s) ? gst_structure_copy (s) : NULL);
+      if (!src->smart_prop)
+        src->smart_prop = gst_structure_copy (s);
+      else
+        gst_structure_foreach (s, set_smart_properties, src);
+
       break;
     }
     default:
