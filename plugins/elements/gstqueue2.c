@@ -386,6 +386,20 @@ gst_queue2_class_init (GstQueue2Class * klass)
 }
 
 static void
+pad_linked (GstPad * pad, GstPad * peer, gpointer user_data)
+{
+  GstQueue2 *queue = GST_QUEUE2_CAST (user_data);
+  GstSmartPropertiesReturn ret;
+
+  ret =
+      gst_element_get_smart_properties (GST_ELEMENT_CAST (queue), "low-percent",
+      &queue->low_percent, NULL);
+
+  GST_INFO_OBJECT (queue, "get smart-properties (ret %d), low-percent : %d",
+      ret, queue->low_percent);
+}
+
+static void
 gst_queue2_init (GstQueue2 * queue)
 {
   queue->sinkpad = gst_pad_new_from_static_template (&sinktemplate, "sink");
@@ -460,6 +474,9 @@ gst_queue2_init (GstQueue2 * queue)
 
   queue->ring_buffer = NULL;
   queue->ring_buffer_max_size = DEFAULT_RING_BUFFER_MAX_SIZE;
+
+  g_signal_connect (G_OBJECT (queue->sinkpad), "linked",
+      (GCallback) pad_linked, queue);
 
   GST_DEBUG_OBJECT (queue,
       "initialized queue's not_empty & not_full conditions");
