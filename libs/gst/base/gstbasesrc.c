@@ -388,9 +388,9 @@ gst_base_src_class_init (GstBaseSrcClass * klass)
           "Apply current stream time to buffers", DEFAULT_DO_TIMESTAMP,
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
   g_object_class_install_property (gobject_class, PROP_SMART_PROPERTIES,
-      g_param_spec_string ("smart-properties", "Smart Properties",
-          "Hold various property values for reply custom query", NULL,
-          G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS));
+      g_param_spec_boxed ("smart-properties", "Smart Properties",
+          "Hold various property values for reply custom query",
+          GST_TYPE_STRUCTURE, G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS));
 
   gstelement_class->change_state =
       GST_DEBUG_FUNCPTR (gst_base_src_change_state);
@@ -2081,18 +2081,16 @@ gst_base_src_set_property (GObject * object, guint prop_id,
       break;
     case PROP_SMART_PROPERTIES:
     {
-      GstStructure *s = NULL;
-      const gchar *maps = g_value_get_string (value);
-
-      s = gst_structure_from_string (maps, NULL);
-      GST_INFO_OBJECT (src,
-          "passed string is [%s], result structure is [%" GST_PTR_FORMAT "]",
-          maps, s);
+      const GstStructure *s = gst_value_get_structure (value);
 
       if (!src->smart_prop)
         src->smart_prop = gst_structure_copy (s);
       else
         gst_structure_foreach (s, set_smart_properties, src);
+
+      GST_INFO_OBJECT (src,
+          "passed structure is [%" GST_PTR_FORMAT "], result structure is [%"
+          GST_PTR_FORMAT "]", s, src->smart_prop);
 
       break;
     }
