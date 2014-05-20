@@ -3075,7 +3075,7 @@ gst_element_get_smart_properties_valist_post_query (GstElement * element,
     const gchar * first_property_name, GstStructure * s, va_list args)
 {
   const gchar *name;
-  GstSmartPropertiesReturn ret = GST_SMART_PROPERTIES_OK;
+  GstSmartPropertiesReturn ret = GST_SMART_PROPERTIES_QUERY_FAILED;
 
   g_return_if_fail (GST_IS_ELEMENT (element));
 
@@ -3090,6 +3090,14 @@ gst_element_get_smart_properties_valist_post_query (GstElement * element,
 
     /* get the value from query result */
     v = gst_structure_get_value (s, name);
+
+    /* assume that Type is G_TYPE_POINTER, then the value is not exist */
+    if (G_VALUE_TYPE (v) == G_TYPE_POINTER) {
+      va_arg (args, gpointer);
+      name = va_arg (args, gchar *);
+      continue;
+    }
+
     G_VALUE_LCOPY (v, args, 0, &error);
 
     if (error) {
@@ -3099,6 +3107,7 @@ gst_element_get_smart_properties_valist_post_query (GstElement * element,
       break;
     }
     name = va_arg (args, gchar *);
+    ret = GST_SMART_PROPERTIES_OK;
   }
 
   return ret;
