@@ -3143,18 +3143,16 @@ gst_element_get_smart_properties (GstElement * element,
   it = gst_element_iterate_sink_pads (element);
   itres = gst_iterator_next (it, &item);
   if (itres != GST_ITERATOR_OK)
-    return GST_SMART_PROPERTIES_ERROR;
+    goto iterator_fail;
 
   sinkpad = g_value_get_object (&item);
   peerpad = gst_pad_get_peer (sinkpad);
-
   if (!peerpad)
-    return GST_SMART_PROPERTIES_NOT_LINKED;
+    goto peerpad_fail;
 
   query = gst_query_new_custom (GST_QUERY_CUSTOM, s);
-
   if (!gst_pad_query (peerpad, query))
-    return GST_SMART_PROPERTIES_QUERY_FAILED;
+    goto query_fail;
 
   result = gst_query_get_structure (query);
 
@@ -3164,9 +3162,30 @@ gst_element_get_smart_properties (GstElement * element,
       first_property_name, (GstStructure *) result, args);
   va_end (args);
 
-  gst_query_unref (query);
   g_value_unset (&item);
   gst_iterator_free (it);
   gst_object_unref (peerpad);
+  gst_query_unref (query);
   return ret;
+
+/* ERRORS */
+iterator_fail:
+  {
+    gst_iterator_free (it);
+    return GST_SMART_PROPERTIES_ERROR;
+  }
+peerpad_fail:
+  {
+    g_value_unset (&item);
+    gst_iterator_free (it);
+    return GST_SMART_PROPERTIES_NOT_LINKED;
+  }
+query_fail:
+  {
+    g_value_unset (&item);
+    gst_iterator_free (it);
+    gst_object_unref (peerpad);
+    gst_query_unref (query);
+    return GST_SMART_PROPERTIES_QUERY_FAILED;
+  }
 }
