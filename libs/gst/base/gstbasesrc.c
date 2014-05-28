@@ -390,7 +390,7 @@ gst_base_src_class_init (GstBaseSrcClass * klass)
   g_object_class_install_property (gobject_class, PROP_SMART_PROPERTIES,
       g_param_spec_boxed ("smart-properties", "Smart Properties",
           "Hold various property values for reply custom query",
-          GST_TYPE_STRUCTURE, G_PARAM_WRITABLE | G_PARAM_STATIC_STRINGS));
+          GST_TYPE_STRUCTURE, G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
 
   gstelement_class->change_state =
       GST_DEBUG_FUNCPTR (gst_base_src_change_state);
@@ -2120,6 +2120,9 @@ gst_base_src_get_property (GObject * object, guint prop_id, GValue * value,
       break;
     case PROP_DO_TIMESTAMP:
       g_value_set_boolean (value, gst_base_src_get_do_timestamp (src));
+      break;
+    case PROP_SMART_PROPERTIES:
+      gst_value_set_structure (value, src->smart_prop);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
