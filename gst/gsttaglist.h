@@ -813,6 +813,45 @@ gst_tag_list_copy (const GstTagList * taglist)
  */
 #define GST_TAG_LANGUAGE_NAME          "language-name"
 /**
+ * GST_TAG_PID:
+ *
+ * Subtitle pid for the subtile content is in (guit16)
+ *
+ * The subtitle pid is used to find correct data for specific subtitle track.
+ * Single pid may contain 1 or multiple tracks. If there's multiple tracks
+ * for single pid, then composition-page-id and ancillary-page-id is needed
+ * to distinguish data for specific track.
+ */
+#define GST_TAG_PID                    "pid"
+/**
+ * GST_TAG_SUBTITLING_TYPE:
+ *
+ * Subtitle Type for the subtile content is in (guit8)
+ *
+ * The subtitling descriptor shall be included in the PMT of the program and
+ * shall be associated to the PID that conveys the subtitle stream.
+ * subtitle type discribe the subtitle type in the subtitle discriptor.
+ */
+#define GST_TAG_SUBTITLING_TYPE        "subtitling-type"
+/**
+ * GST_TAG_COMPOSITION_PAGE_ID:
+ *
+ * composition page id for the subtile content is in (guit16)
+ *
+ * In the subtitling descriptor the page id of segments with data
+ * specific to that service is referred to as the composition page id
+ */
+#define GST_TAG_COMPOSITION_PAGE_ID    "composition-page-id"
+/**
+ * GST_TAG_ANCILLARY_PAGE_ID:
+ *
+ * ancillary page id for the subtile content is in (guit16)
+ *
+ * The page id of segments with shared data in subtitle discriptor
+ * referred to as the ancillary page id
+ */
+#define GST_TAG_ANCILLARY_PAGE_ID      "ancillary-page-id"
+/**
  * GST_TAG_IMAGE:
  *
  * image (sample) (sample taglist should specify the content type and preferably
