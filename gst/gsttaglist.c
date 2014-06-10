@@ -273,6 +273,19 @@ _priv_gst_tag_initialize (void)
   gst_tag_register_static (GST_TAG_LANGUAGE_NAME, GST_TAG_FLAG_META,
       G_TYPE_STRING, _("language name"),
       _("freeform name of the language this stream is in"), NULL);
+  gst_tag_register_static (GST_TAG_PID, GST_TAG_FLAG_META, G_TYPE_UINT,
+      _("subtitle pid"),
+      _("subtitle pid indicates specific subtitle track."), NULL);
+  gst_tag_register_static (GST_TAG_SUBTITLING_TYPE, GST_TAG_FLAG_META,
+      G_TYPE_UINT, _("subtitling type"),
+      _("the subtitle type in the subtitle discriptor"), NULL);
+  gst_tag_register_static (GST_TAG_COMPOSITION_PAGE_ID, GST_TAG_FLAG_META,
+      G_TYPE_UINT, _("composition page id"), _("the page id of segments"),
+      NULL);
+  gst_tag_register_static (GST_TAG_ANCILLARY_PAGE_ID, GST_TAG_FLAG_META,
+      G_TYPE_UINT, _("ancillary page id"),
+      _("the page id of segments with shared data in subtitle discriptor"),
+      NULL);
   gst_tag_register_static (GST_TAG_IMAGE, GST_TAG_FLAG_META, GST_TYPE_SAMPLE,
       _("image"), _("image related to this stream"), gst_tag_merge_use_first);
   gst_tag_register_static (GST_TAG_PREVIEW_IMAGE, GST_TAG_FLAG_META,
