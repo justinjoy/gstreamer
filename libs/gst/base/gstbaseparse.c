@@ -1013,7 +1013,8 @@ gst_base_parse_sink_event_default (GstBaseParse * parse, GstEvent * event)
       gst_event_parse_segment (event, &in_segment);
       gst_segment_init (&out_segment, GST_FORMAT_TIME);
 
-      GST_DEBUG_OBJECT (parse, "segment %" GST_SEGMENT_FORMAT, in_segment);
+      GST_DEBUG_OBJECT (parse, "incoming segment %" GST_SEGMENT_FORMAT,
+          in_segment);
 
       parse->priv->upstream_format = in_segment->format;
       if (in_segment->format == GST_FORMAT_BYTES) {
@@ -1044,6 +1045,7 @@ gst_base_parse_sink_event_default (GstBaseParse * parse, GstEvent * event)
           out_segment.start = seek->segment.start;
           out_segment.stop = seek->segment.stop;
           out_segment.time = seek->segment.start;
+          out_segment.rate = seek->segment.rate;
 
           next_dts = seek->start_ts;
           parse->priv->exact_position = seek->accurate;
@@ -1058,7 +1060,7 @@ gst_base_parse_sink_event_default (GstBaseParse * parse, GstEvent * event)
           out_segment.start = next_dts;
           out_segment.stop = GST_CLOCK_TIME_NONE;
           out_segment.time = next_dts;
-
+          out_segment.rate = in_segment->rate;
           parse->priv->exact_position = (in_segment->start == 0);
         }
 
@@ -1078,6 +1080,7 @@ gst_base_parse_sink_event_default (GstBaseParse * parse, GstEvent * event)
         out_segment.start = 0;
         out_segment.stop = GST_CLOCK_TIME_NONE;
         out_segment.time = 0;
+        out_segment.rate = in_segment->rate;
 
         event = gst_event_new_segment (&out_segment);
         gst_event_set_seqnum (event, seqnum);
@@ -1121,6 +1124,8 @@ gst_base_parse_sink_event_default (GstBaseParse * parse, GstEvent * event)
       parse->priv->prev_dts = GST_CLOCK_TIME_NONE;
       parse->priv->discont = TRUE;
       parse->priv->seen_keyframe = FALSE;
+      GST_DEBUG_OBJECT (parse, "out segment %" GST_SEGMENT_FORMAT,
+          &out_segment);
       break;
     }
 
