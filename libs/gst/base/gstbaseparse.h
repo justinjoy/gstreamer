@@ -171,6 +171,10 @@ struct _GstBaseParse {
   /*< private >*/
   gpointer       _gst_reserved[GST_PADDING_LARGE];
   GstBaseParsePrivate *priv;
+
+  /* DirecTV */
+  gboolean directv_trick;
+  gdouble directv_trick_rate;
 };
 
 /**
