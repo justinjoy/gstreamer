@@ -1095,6 +1095,10 @@ gst_base_parse_sink_event_default (GstBaseParse * parse, GstEvent * event)
         next_dts = in_segment->start;
         if (in_segment->rate > 0.0)
           gst_event_copy_segment (event, &out_segment);
+
+        /* For supporting the rewind trick play */
+        if (in_segment->rate < 0.0)
+          parse->priv->passthrough = TRUE;
       }
 
       memcpy (&parse->segment, &out_segment, sizeof (GstSegment));
