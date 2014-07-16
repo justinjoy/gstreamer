@@ -4133,16 +4133,12 @@ gst_base_parse_handle_custom_event (GstBaseParse * parse, GstEvent * event)
     res = gst_structure_get_boolean (st, "trick-mode", &parse->directv_trick);
     GST_INFO_OBJECT (parse, "directv-rvu-trickplay trick-mode : %d",
         parse->directv_trick);
-    if (parse->directv_trick) {
-      if (gst_structure_has_field (st, "trick-rate")) {
-        res =
-            gst_structure_get_double (st, "trick-rate",
-            &parse->directv_trick_rate);
-        GST_INFO_OBJECT (parse, "directv-rvu-trickplay trick-rate : %f",
-            parse->directv_trick_rate);
-        if (parse->directv_trick_rate < 0.0)
-          parse->directv_trick_rate = 1.0;
-      }
+    if (parse->directv_trick && gst_structure_has_field (st, "trick-rate")) {
+      res =
+          gst_structure_get_double (st, "trick-rate",
+          &parse->directv_trick_rate);
+      GST_INFO_OBJECT (parse, "directv-rvu-trickplay trick-rate : %f",
+          parse->directv_trick_rate);
     }
   }
   return res;
