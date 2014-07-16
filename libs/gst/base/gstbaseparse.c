@@ -423,8 +423,6 @@ static gboolean gst_base_parse_sink_activate (GstPad * sinkpad,
     GstObject * parent);
 static gboolean gst_base_parse_sink_activate_mode (GstPad * pad,
     GstObject * parent, GstPadMode mode, gboolean active);
-static gboolean gst_base_parse_handle_custom_event (GstBaseParse * parse,
-    GstEvent * event);
 static gboolean gst_base_parse_handle_seek (GstBaseParse * parse,
     GstEvent * event);
 static void gst_base_parse_handle_tag (GstBaseParse * parse, GstEvent * event);
@@ -862,11 +860,6 @@ gst_base_parse_reset (GstBaseParse * parse)
   g_list_free (parse->priv->detect_buffers);
   parse->priv->detect_buffers = NULL;
   parse->priv->detect_buffers_size = 0;
-
-  /* DirecTV */
-  parse->directv_trick = FALSE;
-  parse->directv_trick_rate = 0.0;
-
   GST_OBJECT_UNLOCK (parse);
 }
 
@@ -1069,10 +1062,7 @@ gst_base_parse_sink_event_default (GstBaseParse * parse, GstEvent * event)
           out_segment.start = next_dts;
           out_segment.stop = GST_CLOCK_TIME_NONE;
           out_segment.time = next_dts;
-          if (parse->directv_trick)
-            out_segment.rate = parse->directv_trick_rate;
-          else
-            out_segment.rate = in_segment->rate;
+          out_segment.rate = in_segment->rate;
           parse->priv->exact_position = (in_segment->start == 0);
         }
 
@@ -1419,11 +1409,6 @@ gst_base_parse_src_event_default (GstBaseParse * parse, GstEvent * event)
     case GST_EVENT_SEEK:
       if (gst_base_parse_is_seekable (parse))
         res = gst_base_parse_handle_seek (parse, event);
-      break;
-    case GST_EVENT_CUSTOM_UPSTREAM:
-      res = gst_pad_push_event (parse->sinkpad, event);
-      if (!res)
-        res = gst_base_parse_handle_custom_event (parse, event);
       break;
     default:
       res = gst_pad_event_default (parse->srcpad, GST_OBJECT_CAST (parse),
@@ -4119,29 +4104,6 @@ exit:
     *_ts = ts;
 
   return bytes;
-}
-
-/* returns TRUE if seek succeeded */
-static gboolean
-gst_base_parse_handle_custom_event (GstBaseParse * parse, GstEvent * event)
-{
-  gboolean res = FALSE;
-  const GstStructure *st = NULL;
-  st = gst_event_get_structure (event);
-  if (st && !strcmp (gst_structure_get_name (st), "directv-rvu-trickplay")
-      && gst_structure_has_field (st, "trick-mode")) {
-    res = gst_structure_get_boolean (st, "trick-mode", &parse->directv_trick);
-    GST_INFO_OBJECT (parse, "directv-rvu-trickplay trick-mode : %d",
-        parse->directv_trick);
-    if (parse->directv_trick && gst_structure_has_field (st, "trick-rate")) {
-      res =
-          gst_structure_get_double (st, "trick-rate",
-          &parse->directv_trick_rate);
-      GST_INFO_OBJECT (parse, "directv-rvu-trickplay trick-rate : %f",
-          parse->directv_trick_rate);
-    }
-  }
-  return res;
 }
 
 /* returns TRUE if seek succeeded */
