@@ -3661,6 +3661,18 @@ gst_base_parse_set_latency (GstBaseParse * parse, GstClockTime min_latency,
       GST_TIME_ARGS (max_latency));
 }
 
+void
+gst_base_parse_set_next_timestamp (GstBaseParse * parse, GstClockTime next_pts,
+    GstClockTime next_dts)
+{
+  GST_OBJECT_LOCK (parse);
+  parse->priv->next_pts = next_pts;
+  parse->priv->next_dts = next_dts;
+  GST_OBJECT_UNLOCK (parse);
+  GST_INFO_OBJECT (parse, "Set next_pts %" GST_TIME_FORMAT ", next_dts %"
+      GST_TIME_FORMAT, GST_TIME_ARGS (next_pts), GST_TIME_ARGS (next_dts));
+}
+
 static gboolean
 gst_base_parse_get_duration (GstBaseParse * parse, GstFormat format,
     GstClockTime * duration)

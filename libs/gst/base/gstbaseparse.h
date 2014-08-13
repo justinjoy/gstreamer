@@ -343,6 +343,9 @@ gboolean        gst_base_parse_add_index_entry (GstBaseParse * parse,
 void            gst_base_parse_set_ts_at_offset (GstBaseParse *parse,
                                                  gsize offset);
 
+void            gst_base_parse_set_next_timestamp (GstBaseParse * parse,
+                                                GstClockTime next_pts,
+                                                GstClockTime next_dts);
 G_END_DECLS
 
 #endif /* __GST_BASE_PARSE_H__ */
