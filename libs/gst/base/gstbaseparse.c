@@ -1909,7 +1909,7 @@ gst_base_parse_prepare_frame (GstBaseParse * parse, GstBuffer * buffer)
       GST_BUFFER_OFFSET (buffer), GST_BUFFER_OFFSET (buffer),
       gst_buffer_get_size (buffer));
 
-  if (parse->priv->discont) {
+  if (parse->priv->discont || parse->segment.rate > 2) {
     GST_DEBUG_OBJECT (parse, "marking DISCONT");
     GST_BUFFER_FLAG_SET (buffer, GST_BUFFER_FLAG_DISCONT);
     parse->priv->discont = FALSE;
@@ -2309,6 +2309,11 @@ gst_base_parse_push_frame (GstBaseParse * parse, GstBaseParseFrame * frame)
     if (parse->segment.rate > 0.0) {
       GST_LOG_OBJECT (parse, "pushing frame (%" G_GSIZE_FORMAT " bytes) now..",
           size);
+
+      GST_LOG_OBJECT (parse, "OUT: DISCONT %d, rate %f",
+          GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_DISCONT),
+          parse->segment.rate);
+
       ret = gst_pad_push (parse->srcpad, buffer);
       GST_LOG_OBJECT (parse, "frame pushed, flow %s", gst_flow_get_name (ret));
     } else if (!parse->priv->disable_passthrough && parse->priv->passthrough) {
@@ -2329,6 +2334,11 @@ gst_base_parse_push_frame (GstBaseParse * parse, GstBaseParseFrame * frame)
       if (ret == GST_FLOW_OK) {
         GST_LOG_OBJECT (parse,
             "pushing frame (%" G_GSIZE_FORMAT " bytes) now..", size);
+
+        GST_LOG_OBJECT (parse, "OUT: DISCONT %d, rate %f",
+            GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_DISCONT),
+            parse->segment.rate);
+
         ret = gst_pad_push (parse->srcpad, buffer);
         GST_LOG_OBJECT (parse, "frame pushed, flow %s",
             gst_flow_get_name (ret));
@@ -2817,6 +2827,10 @@ gst_base_parse_chain (GstPad * pad, GstObject * parent, GstBuffer * buffer)
         gst_buffer_get_size (buffer), GST_BUFFER_OFFSET (buffer),
         GST_TIME_ARGS (GST_BUFFER_DTS (buffer)),
         GST_TIME_ARGS (GST_BUFFER_PTS (buffer)));
+
+    GST_INFO_OBJECT (parse, "IN: DISCONT %d, rate %f",
+        GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_DISCONT),
+        parse->segment.rate);
 
     if (G_UNLIKELY (!parse->priv->disable_passthrough
             && parse->priv->passthrough)) {
