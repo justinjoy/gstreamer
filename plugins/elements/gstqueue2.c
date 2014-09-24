@@ -112,6 +112,7 @@ enum
 #define DEFAULT_HIGH_PERCENT       99
 #define DEFAULT_TEMP_REMOVE        TRUE
 #define DEFAULT_RING_BUFFER_MAX_SIZE 0
+#define DEFAULT_EOS                FALSE
 
 enum
 {
@@ -130,6 +131,7 @@ enum
   PROP_TEMP_LOCATION,
   PROP_TEMP_REMOVE,
   PROP_RING_BUFFER_MAX_SIZE,
+  PROP_EOS,
   PROP_LAST
 };
 
@@ -366,6 +368,11 @@ gst_queue2_class_init (GstQueue2Class * klass)
           "Max. amount of data in the ring buffer (bytes, 0 = disabled)",
           0, G_MAXUINT64, DEFAULT_RING_BUFFER_MAX_SIZE,
           G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS));
+
+  g_object_class_install_property (gobject_class, PROP_EOS,
+      g_param_spec_boolean ("eos", "The status of EOS",
+          "When receiving EOS in buffering, eos will be turned on",
+          DEFAULT_EOS, G_PARAM_READABLE | G_PARAM_STATIC_STRINGS));
 
   /* set several parent class virtual functions */
   gobject_class->finalize = gst_queue2_finalize;
@@ -3494,6 +3501,9 @@ gst_queue2_get_property (GObject * object,
       break;
     case PROP_RING_BUFFER_MAX_SIZE:
       g_value_set_uint64 (value, queue->ring_buffer_max_size);
+      break;
+    case PROP_EOS:
+      g_value_set_boolean (value, queue->is_eos);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
