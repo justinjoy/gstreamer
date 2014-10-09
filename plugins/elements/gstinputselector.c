@@ -1386,10 +1386,22 @@ gst_input_selector_set_active_pad (GstInputSelector * self, GstPad * pad)
       walk = g_list_next (walk)) {
     GstPad *sinkpad = GST_PAD_CAST (walk->data);
 
-    gst_pad_push_event (sinkpad,
-        gst_event_new_custom (GST_EVENT_CUSTOM_UPSTREAM,
-            gst_structure_new ("acquired-resource",
-                "active", G_TYPE_BOOLEAN, (sinkpad == *active_pad_p), NULL)));
+    if (sinkpad != *active_pad_p)
+      gst_pad_push_event (sinkpad,
+          gst_event_new_custom (GST_EVENT_CUSTOM_UPSTREAM,
+              gst_structure_new ("acquired-resource",
+                  "active", G_TYPE_BOOLEAN, (sinkpad == *active_pad_p), NULL)));
+  }
+
+  for (walk = GST_ELEMENT_CAST (self)->sinkpads; walk;
+      walk = g_list_next (walk)) {
+    GstPad *sinkpad = GST_PAD_CAST (walk->data);
+
+    if (sinkpad == *active_pad_p)
+      gst_pad_push_event (sinkpad,
+          gst_event_new_custom (GST_EVENT_CUSTOM_UPSTREAM,
+              gst_structure_new ("acquired-resource",
+                  "active", G_TYPE_BOOLEAN, (sinkpad == *active_pad_p), NULL)));
   }
 
   if (old && old != new)
