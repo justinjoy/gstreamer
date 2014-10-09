@@ -308,7 +308,7 @@ gst_funnel_sink_event (GstPad * pad, GstObject * parent, GstEvent * event)
         forward = TRUE;
       }
       GST_OBJECT_UNLOCK (funnel);
-    } else if (pad != funnel->last_sinkpad) {
+    } else if (funnel->last_sinkpad && (pad != funnel->last_sinkpad)) {
       forward = FALSE;
     }
   } else if (GST_EVENT_TYPE (event) == GST_EVENT_FLUSH_STOP) {
