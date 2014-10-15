@@ -2174,7 +2174,7 @@ gst_base_parse_push_frame (GstBaseParse * parse, GstBaseParseFrame * frame)
 
   buffer = frame->buffer;
 
-  GST_LOG_OBJECT (parse,
+  GST_INFO_OBJECT (parse,
       "processing buffer of size %" G_GSIZE_FORMAT " with dts %" GST_TIME_FORMAT
       ", pts %" GST_TIME_FORMAT ", duration %" GST_TIME_FORMAT,
       gst_buffer_get_size (buffer),
@@ -2282,7 +2282,7 @@ gst_base_parse_push_frame (GstBaseParse * parse, GstBaseParseFrame * frame)
         GST_CLOCK_TIME_IS_VALID (parse->segment.stop) &&
         GST_BUFFER_TIMESTAMP (buffer) >
         parse->segment.stop + parse->priv->lead_out_ts) {
-      GST_LOG_OBJECT (parse, "Dropped frame, after segment");
+      GST_INFO_OBJECT (parse, "Dropped frame, after segment");
       ret = GST_FLOW_EOS;
     } else if (GST_BUFFER_TIMESTAMP_IS_VALID (buffer) &&
         GST_BUFFER_DURATION_IS_VALID (buffer) &&
@@ -2290,10 +2290,10 @@ gst_base_parse_push_frame (GstBaseParse * parse, GstBaseParseFrame * frame)
         GST_BUFFER_TIMESTAMP (buffer) + GST_BUFFER_DURATION (buffer) +
         parse->priv->lead_in_ts < parse->segment.start) {
       if (parse->priv->seen_keyframe) {
-        GST_LOG_OBJECT (parse, "Frame before segment, after keyframe");
+        GST_INFO_OBJECT (parse, "Frame before segment, after keyframe");
         ret = GST_FLOW_OK;
       } else {
-        GST_LOG_OBJECT (parse, "Dropped frame, before segment");
+        GST_INFO_OBJECT (parse, "Dropped frame, before segment");
         ret = GST_BASE_PARSE_FLOW_DROPPED;
       }
     } else {
@@ -2302,20 +2302,20 @@ gst_base_parse_push_frame (GstBaseParse * parse, GstBaseParseFrame * frame)
   }
 
   if (ret == GST_BASE_PARSE_FLOW_DROPPED) {
-    GST_LOG_OBJECT (parse, "frame (%" G_GSIZE_FORMAT " bytes) dropped", size);
+    GST_INFO_OBJECT (parse, "frame (%" G_GSIZE_FORMAT " bytes) dropped", size);
     gst_buffer_unref (buffer);
     ret = GST_FLOW_OK;
   } else if (ret == GST_FLOW_OK) {
     if (parse->segment.rate > 0.0) {
-      GST_LOG_OBJECT (parse, "pushing frame (%" G_GSIZE_FORMAT " bytes) now..",
+      GST_INFO_OBJECT (parse, "pushing frame (%" G_GSIZE_FORMAT " bytes) now..",
           size);
 
-      GST_LOG_OBJECT (parse, "OUT: DISCONT %d, rate %f",
+      GST_INFO_OBJECT (parse, "OUT: DISCONT %d, rate %f",
           GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_DISCONT),
           parse->segment.rate);
 
       ret = gst_pad_push (parse->srcpad, buffer);
-      GST_LOG_OBJECT (parse, "frame pushed, flow %s", gst_flow_get_name (ret));
+      GST_INFO_OBJECT (parse, "frame pushed, flow %s", gst_flow_get_name (ret));
     } else if (!parse->priv->disable_passthrough && parse->priv->passthrough) {
 
       /* in backwards playback mode, if on passthrough we need to push buffers
@@ -2332,32 +2332,32 @@ gst_base_parse_push_frame (GstBaseParse * parse, GstBaseParseFrame * frame)
       }
 
       if (ret == GST_FLOW_OK) {
-        GST_LOG_OBJECT (parse,
+        GST_INFO_OBJECT (parse,
             "pushing frame (%" G_GSIZE_FORMAT " bytes) now..", size);
 
-        GST_LOG_OBJECT (parse, "OUT: DISCONT %d, rate %f",
+        GST_INFO_OBJECT (parse, "OUT: DISCONT %d, rate %f",
             GST_BUFFER_FLAG_IS_SET (buffer, GST_BUFFER_FLAG_DISCONT),
             parse->segment.rate);
 
         ret = gst_pad_push (parse->srcpad, buffer);
-        GST_LOG_OBJECT (parse, "frame pushed, flow %s",
+        GST_INFO_OBJECT (parse, "frame pushed, flow %s",
             gst_flow_get_name (ret));
       } else {
-        GST_LOG_OBJECT (parse,
+        GST_INFO_OBJECT (parse,
             "frame (%" G_GSIZE_FORMAT " bytes) not pushed: %s", size,
             gst_flow_get_name (ret));
         gst_buffer_unref (buffer);
       }
 
     } else {
-      GST_LOG_OBJECT (parse, "frame (%" G_GSIZE_FORMAT " bytes) queued for now",
-          size);
+      GST_INFO_OBJECT (parse,
+          "frame (%" G_GSIZE_FORMAT " bytes) queued for now", size);
       parse->priv->buffers_queued =
           g_slist_prepend (parse->priv->buffers_queued, buffer);
       ret = GST_FLOW_OK;
     }
   } else {
-    GST_LOG_OBJECT (parse, "frame (%" G_GSIZE_FORMAT " bytes) not pushed: %s",
+    GST_INFO_OBJECT (parse, "frame (%" G_GSIZE_FORMAT " bytes) not pushed: %s",
         size, gst_flow_get_name (ret));
     gst_buffer_unref (buffer);
     /* if we are not sufficiently in control, let upstream decide on EOS */
@@ -2821,7 +2821,7 @@ gst_base_parse_chain (GstPad * pad, GstObject * parent, GstBuffer * buffer)
   }
 
   if (G_LIKELY (buffer)) {
-    GST_LOG_OBJECT (parse,
+    GST_INFO_OBJECT (parse,
         "buffer size: %" G_GSIZE_FORMAT ", offset = %" G_GINT64_FORMAT
         ", dts %" GST_TIME_FORMAT ", pts %" GST_TIME_FORMAT,
         gst_buffer_get_size (buffer), GST_BUFFER_OFFSET (buffer),
