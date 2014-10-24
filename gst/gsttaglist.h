@@ -815,7 +815,7 @@ gst_tag_list_copy (const GstTagList * taglist)
 /**
  * GST_TAG_PID:
  *
- * Subtitle pid for the subtile content is in (guit16)
+ * Subtitle pid for the subtitle content is in (guint16)
  *
  * The subtitle pid is used to find correct data for specific subtitle track.
  * Single pid may contain 1 or multiple tracks. If there's multiple tracks
@@ -826,17 +826,17 @@ gst_tag_list_copy (const GstTagList * taglist)
 /**
  * GST_TAG_SUBTITLING_TYPE:
  *
- * Subtitle Type for the subtile content is in (guit8)
+ * Subtitle Type for the subtitle content is in (guint8)
  *
  * The subtitling descriptor shall be included in the PMT of the program and
  * shall be associated to the PID that conveys the subtitle stream.
- * subtitle type discribe the subtitle type in the subtitle discriptor.
+ * subtitle type describe the subtitle type in the subtitle descriptor.
  */
 #define GST_TAG_SUBTITLING_TYPE        "subtitling-type"
 /**
  * GST_TAG_COMPOSITION_PAGE_ID:
  *
- * composition page id for the subtile content is in (guit16)
+ * composition page id for the subtitle content is in (guint16)
  *
  * In the subtitling descriptor the page id of segments with data
  * specific to that service is referred to as the composition page id
@@ -845,12 +845,38 @@ gst_tag_list_copy (const GstTagList * taglist)
 /**
  * GST_TAG_ANCILLARY_PAGE_ID:
  *
- * ancillary page id for the subtile content is in (guit16)
+ * ancillary page id for the subtitle content is in (guint16)
  *
- * The page id of segments with shared data in subtitle discriptor
+ * The page id of segments with shared data in subtitle descriptor
  * referred to as the ancillary page id
  */
 #define GST_TAG_ANCILLARY_PAGE_ID      "ancillary-page-id"
+/**
+ * GST_TAG_TELETEXT_TYPE:
+ *
+ * teletext type for the teletext content is in (guint8)
+ *
+ * In the teletext descriptor the type of Teletext page indicated.
+ */
+#define GST_TAG_TELETEXT_TYPE          "teletext-type"
+/**
+ * GST_TAG_TELETEXT_MAGAZINE_NUMBER:
+ *
+ * teletext magazine number for the teletext content is in (guint8)
+ *
+ * The magazine number in teletext descriptor refferred to as the
+ * teletext magazine number
+ */
+#define GST_TAG_TELETEXT_MAGAZINE_NUMBER               "teletext-magazine-number"
+/**
+ *
+ * GST_TAG_TELETEXT_PAGE_NUMBER:
+ *
+ * teletext page number for the teletext content is in (guint8)
+ *
+ * In the teletext descriptor the number of page indicated.
+ */
+#define GST_TAG_TELETEXT_PAGE_NUMBER               "teletext-page-number"
 /**
  * GST_TAG_IMAGE:
  *

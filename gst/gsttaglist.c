@@ -286,6 +286,13 @@ _priv_gst_tag_initialize (void)
       G_TYPE_UINT, _("ancillary page id"),
       _("the page id of segments with shared data in subtitle discriptor"),
       NULL);
+  gst_tag_register_static (GST_TAG_TELETEXT_TYPE, GST_TAG_FLAG_META,
+      G_TYPE_UINT, _("teletext type"), _("teletext type"), NULL);
+  gst_tag_register_static (GST_TAG_TELETEXT_MAGAZINE_NUMBER, GST_TAG_FLAG_META,
+      G_TYPE_UINT, _("teletext magazine number"), _("teletext magazine number"),
+      NULL);
+  gst_tag_register_static (GST_TAG_TELETEXT_PAGE_NUMBER, GST_TAG_FLAG_META,
+      G_TYPE_UINT, _("teletext page number"), _("teletext page number"), NULL);
   gst_tag_register_static (GST_TAG_IMAGE, GST_TAG_FLAG_META, GST_TYPE_SAMPLE,
       _("image"), _("image related to this stream"), gst_tag_merge_use_first);
   gst_tag_register_static (GST_TAG_PREVIEW_IMAGE, GST_TAG_FLAG_META,
