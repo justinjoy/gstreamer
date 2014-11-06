@@ -2003,7 +2003,11 @@ gst_base_parse_handle_buffer (GstBaseParse * parse, GstBuffer * buffer,
     if (!parse->priv->discont)
       parse->priv->sync_offset = parse->priv->offset;
     parse->priv->offset += *skip;
-    parse->priv->discont = TRUE;
+    /* For unknown audio data, the logic finding syncword
+       in dcaparse may has problem. ISSUE: MFTEVENTFT-31044 */
+    if (parse->priv->is_video)
+      parse->priv->discont = TRUE;
+
     /* check for indefinite skipping */
     if (ret == GST_FLOW_OK)
       ret = gst_base_parse_check_sync (parse);
